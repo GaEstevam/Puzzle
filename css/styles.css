@@ -4,11 +4,13 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #eef2f3;
+    margin: 0;
+    background: url('../assets/hearts.gif') no-repeat center center fixed;  /* GIF de fundo */
+    background-size: cover;  /* O GIF cobre toda a tela */
 }
 
 #puzzle-container {
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.8);  /* Fundo branco semi-transparente */
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
