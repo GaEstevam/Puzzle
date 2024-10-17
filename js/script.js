@@ -20,7 +20,7 @@ document.getElementById('left').addEventListener('click', () => setDirection(-1,
 document.getElementById('right').addEventListener('click', () => setDirection(1, 0));
 
 // Iniciar o loop do jogo
-setInterval(gameLoop, 100);
+setInterval(gameLoop, 150);
 
 function gameLoop() {
     moveSnake();
