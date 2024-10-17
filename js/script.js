@@ -1,47 +1,107 @@
-// Variáveis globais
-let timeLeft = 60;  // 60 segundos para resolver o puzzle
-let countdownInterval;  // Variável para armazenar o intervalo do cronômetro
-const timerElement = document.getElementById("time");
-const result = document.getElementById("result");
-const downloadLink = document.getElementById("download-link");
-const submitButton = document.querySelector("button");  // Seleciona o botão "Enviar Respostas"
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-// Função para o cronômetro
-function startCountdown() {
-    countdownInterval = setInterval(() => {
-        if (timeLeft <= 0) {
-            clearInterval(countdownInterval);
-            result.textContent = "Tempo esgotado! Tente novamente.";
-            result.style.color = "red";
-            downloadLink.style.display = "none";  // Esconder o link se o tempo esgotar
-            submitButton.style.display = "none";  // Esconder o botão de envio
-        } else {
-            timerElement.textContent = timeLeft;
-            timeLeft--;
-        }
-    }, 1000);
+// Ajustar o tamanho do canvas para dispositivos móveis
+canvas.width = canvas.height = 400;
+
+let gridSize = 20;
+let snake = [{ x: 200, y: 200 }];
+let snakeLength = 1;
+let food = generateRandomPosition();
+let direction = { x: 0, y: 0 };
+let score = 0;
+const winningScore = 10;
+
+// Escutar setas do teclado e botões de controle
+window.addEventListener('keydown', handleKeyPress);
+document.getElementById('up').addEventListener('click', () => setDirection(0, -1));
+document.getElementById('down').addEventListener('click', () => setDirection(0, 1));
+document.getElementById('left').addEventListener('click', () => setDirection(-1, 0));
+document.getElementById('right').addEventListener('click', () => setDirection(1, 0));
+
+// Iniciar o loop do jogo
+setInterval(gameLoop, 100);
+
+function gameLoop() {
+    moveSnake();
+    checkCollision();
+    drawGame();
 }
 
-// Iniciar o cronômetro assim que a página for carregada
-window.onload = function() {
-    startCountdown();  // O cronômetro começa assim que a página carrega
-};
+function drawGame() {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-// Função para verificar as respostas do puzzle
-function checkAnswers() {
-    const word1 = document.getElementById("word1").value.toLowerCase();
-    const word2 = document.getElementById("word2").value.toLowerCase();
-    const word3 = document.getElementById("word3").value.toLowerCase();
+    ctx.fillStyle = 'red';
+    ctx.fillRect(food.x, food.y, gridSize, gridSize);
 
-    // Respostas corretas dos anagramas
-    if (word1 === "allen iverson" && word2 === "golden state warriors" && word3 === "2022") {
-        clearInterval(countdownInterval);  // Parar o cronômetro
-        result.textContent = "Parabéns! Você resolveu todos os anagramas!";
-        result.style.color = "green";
-        downloadLink.style.display = "inline";  // Mostrar o link de download
-        submitButton.style.display = "none";  // Esconder o botão após sucesso
-    } else {
-        result.textContent = "Resposta incorreta! Tente novamente.";
-        result.style.color = "red";
+    ctx.fillStyle = 'pink';
+    snake.forEach(segment => {
+        ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+    });
+}
+
+function moveSnake() {
+    const head = { x: snake[0].x + direction.x * gridSize, y: snake[0].y + direction.y * gridSize };
+    snake.unshift(head);
+    if (snake.length > snakeLength) {
+        snake.pop();
     }
+}
+
+function checkCollision() {
+    if (snake[0].x === food.x && snake[0].y === food.y) {
+        score++;
+        snakeLength++;
+        food = generateRandomPosition();
+
+        if (score >= winningScore) {
+            endGame();
+        }
+    }
+
+    if (snake[0].x < 0 || snake[0].x >= canvas.width || snake[0].y < 0 || snake[0].y >= canvas.height) {
+        resetGame();
+    }
+}
+
+function generateRandomPosition() {
+    const x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
+    const y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+    return { x, y };
+}
+
+function handleKeyPress(event) {
+    switch (event.key) {
+        case 'ArrowUp':
+            setDirection(0, -1);
+            break;
+        case 'ArrowDown':
+            setDirection(0, 1);
+            break;
+        case 'ArrowLeft':
+            setDirection(-1, 0);
+            break;
+        case 'ArrowRight':
+            setDirection(1, 0);
+            break;
+    }
+}
+
+function setDirection(x, y) {
+    direction = { x, y };
+}
+
+function resetGame() {
+    alert('Você bateu! Tente novamente.');
+    snake = [{ x: 200, y: 200 }];
+    snakeLength = 1;
+    direction = { x: 0, y: 0 };
+    score = 0;
+    food = generateRandomPosition();
+}
+
+function endGame() {
+    alert('Parabéns! Você ganhou o prêmio!');
+    document.getElementById('download-link').style.display = 'block';
 }

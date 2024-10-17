@@ -3,35 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle de Anagramas de Basquete</title>
+    <title>Minigame da Cobrinha</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div id="puzzle-container">
-        <h1>Resolva os Anagramas para Desbloquear o Arquivo</h1>
-        <p>Decifre os anagramas a seguir:</p>
-
-        <div class="anagram-section">
-            <p><strong>Palavra 1:</strong> "vreal leinneso"</p>
-            <input type="text" id="word1" placeholder="Digite a palavra correta">
-        </div>
-        
-        <div class="anagram-section">
-            <p><strong>Palavra 2:</strong> "nedolg rwtoirsa tetas"</p>
-            <input type="text" id="word2" placeholder="Digite a palavra correta">
-        </div>
-
-        <div class="anagram-section">
-            <p><strong>Palavra 3:</strong> "2220"</p>
-            <input type="text" id="word3" placeholder="Digite a palavra correta">
-        </div>
-
-        <button onclick="checkAnswers()">Enviar Respostas</button>
-        <p id="result"></p>
-        <a id="download-link" href="assets/Salva vidas.png" style="display: none;" download>Clique aqui para baixar o arquivo</a>
-        
-        <div id="timer">Tempo restante: <span id="time">60</span> segundos</div>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
     </div>
+
+    <div id="controls">
+        <button class="arrow" id="left">⬅️</button>
+        <div class="vertical-arrows">
+            <button class="arrow" id="up">⬆️</button>
+            <button class="arrow" id="down">⬇️</button>
+        </div>
+        <button class="arrow" id="right">➡️</button>
+    </div>
+
+    <p id="result"></p>
+    <a id="download-link" href="assets/Confidencial.png" style="display: none;" download>Clique aqui para baixar o prêmio!</a>
 
     <script src="js/script.js"></script>
 </body>
