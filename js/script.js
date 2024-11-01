@@ -1,138 +1,84 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const gameBoard = document.getElementById('gameBoard');
 
-// Ajustar o tamanho do canvas para dispositivos móveis
-canvas.width = canvas.height = 400;
+// Lista de 32 imagens para formar os pares
+const images = [
+  './assets/img1.jpeg', './assets/img2.jpeg', './assets/img3.jpeg', './assets/img4.jpeg',
+  './assets/img5.jpeg', './assets/img6.jpeg', './assets/img7.jpeg', './assets/img8.jpeg',
+  './assets/img9.jpeg', './assets/img10.jpeg', './assets/img11.jpeg', './assets/img12.jpeg',
+  './assets/img13.jpeg', './assets/img14.jpeg', './assets/img15.jpeg', './assets/img16.jpeg',
+  './assets/img17.jpeg', './assets/img18.jpeg', './assets/img19.jpeg', './assets/img20.jpeg',
+  './assets/img21.jpeg', './assets/img22.jpeg', './assets/img23.jpeg', './assets/img24.jpeg',
+  './assets/img25.jpeg', './assets/img26.jpeg', './assets/img27.jpeg', './assets/img28.jpeg',
+  './assets/img29.jpeg', './assets/img30.jpeg', './assets/img31.jpeg', './assets/img32.jpeg'
+];
 
-let gridSize = 20;
-let snake = [{ x: 200, y: 200 }];
-let snakeLength = 1;
-let food = generateRandomPosition();
-let direction = { x: 0, y: 0 };
-let score = 0;
-const winningScore = 10;
-let gameInterval; // Armazena o intervalo do loop do jogo
+// Duplicar a lista para criar pares
+const cards = [...images, ...images];
 
-// Escutar setas do teclado e botões de controle
-window.addEventListener('keydown', handleKeyPress);
-document.getElementById('up').addEventListener('click', () => setDirection(0, -1));
-document.getElementById('down').addEventListener('click', () => setDirection(0, 1));
-document.getElementById('left').addEventListener('click', () => setDirection(-1, 0));
-document.getElementById('right').addEventListener('click', () => setDirection(1, 0));
+// Embaralhar as cartas
+cards.sort(() => Math.random() - 0.5);
 
-// Função para iniciar o loop do jogo
-function startGame() {
-    gameInterval = setInterval(gameLoop, 150);
-}
-startGame();
+let firstCard = null;
+let secondCard = null;
+let lockBoard = false; // Bloqueia cliques durante a verificação de pares
 
-function gameLoop() {
-    moveSnake();
-    checkCollision();
-    drawGame();
-}
+// Função para criar e exibir as cartas no tabuleiro
+cards.forEach((image) => {
+  const card = document.createElement('div');
+  card.classList.add('card');
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="card-front"></div>
+      <div class="card-back" style="background-image: url('${image}')"></div>
+    </div>
+  `;
+  card.addEventListener('click', flipCard);
+  gameBoard.appendChild(card);
+});
 
-function drawGame() {
-    // Preencher fundo de preto
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Função para virar a carta
+function flipCard() {
+  if (lockBoard) return; // Evita cliques enquanto as cartas estão sendo verificadas
+  if (this === firstCard) return; // Evita que a mesma carta seja clicada duas vezes
 
-    // Desenhar comida em vermelho
-    ctx.fillStyle = 'red';
-    ctx.fillRect(food.x, food.y, gridSize, gridSize);
+  this.classList.add('flipped');
 
-    // Desenhar a cobra em rosa
-    ctx.fillStyle = 'pink';
-    snake.forEach(segment => {
-        ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
-    });
-}
+  if (!firstCard) {
+    firstCard = this;
+    return;
+  }
 
-function moveSnake() {
-    const head = { 
-        x: snake[0].x + direction.x * gridSize, 
-        y: snake[0].y + direction.y * gridSize 
-    };
-
-    snake.unshift(head); // Adiciona nova cabeça no início
-
-    if (snake.length > snakeLength) {
-        snake.pop(); // Remove o último segmento se a cobra não cresceu
-    }
+  secondCard = this;
+  checkForMatch();
 }
 
-function checkCollision() {
-    // Verificar se a cobra comeu a comida
-    if (snake[0].x === food.x && snake[0].y === food.y) {
-        score++;
-        snakeLength++;
-        food = generateRandomPosition(); // Gera nova posição para a comida
+// Verifica se as duas cartas viradas são um par
+function checkForMatch() {
+  const isMatch =
+    firstCard.querySelector('.card-back').style.backgroundImage ===
+    secondCard.querySelector('.card-back').style.backgroundImage;
 
-        // Se atingir a pontuação de vitória, encerrar o jogo
-        if (score >= winningScore) {
-            endGame();
-        }
-    }
-
-    // Verificar colisão com as bordas do canvas
-    if (
-        snake[0].x < 0 || snake[0].x >= canvas.width ||
-        snake[0].y < 0 || snake[0].y >= canvas.height
-    ) {
-        resetGame(); // Reinicia o jogo ao bater
-    }
+  isMatch ? disableCards() : unflipCards();
 }
 
-function generateRandomPosition() {
-    const x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
-    const y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
-    return { x, y };
+// Desabilita as cartas se forem um par
+function disableCards() {
+  firstCard.removeEventListener('click', flipCard);
+  secondCard.removeEventListener('click', flipCard);
+  resetBoard();
 }
 
-function handleKeyPress(event) {
-    switch (event.key) {
-        case 'ArrowUp':
-            setDirection(0, -1);
-            break;
-        case 'ArrowDown':
-            setDirection(0, 1);
-            break;
-        case 'ArrowLeft':
-            setDirection(-1, 0);
-            break;
-        case 'ArrowRight':
-            setDirection(1, 0);
-            break;
-    }
+// Desvira as cartas se não forem um par
+function unflipCards() {
+  lockBoard = true; // Bloqueia novos cliques até que as cartas sejam desviradas
+  setTimeout(() => {
+    firstCard.classList.remove('flipped');
+    secondCard.classList.remove('flipped');
+    resetBoard();
+  }, 1000);
 }
 
-function setDirection(x, y) {
-    direction = { x, y };
-}
-
-function resetGame() {
-    clearInterval(gameInterval); // Parar o loop do jogo
-
-    alert('Você bateu! Tente novamente.'); // Mensagem de colisão
-
-    // Resetar estado do jogo
-    snake = [{ x: 200, y: 200 }];
-    snakeLength = 1;
-    direction = { x: 0, y: 0 };
-    score = 0;
-    food = generateRandomPosition();
-
-    // Reiniciar o loop do jogo
-    startGame();
-}
-
-function endGame() {
-    clearInterval(gameInterval); // Parar o loop do jogo
-
-    // Exibir mensagem de vitória e tornar o link visível
-    const result = document.getElementById('result');
-    result.textContent = 'Parabéns! Você ganhou o prêmio!';
-
-    const downloadLink = document.getElementById('download-link');
-    downloadLink.style.display = 'block'; // Exibir link de download
+// Reseta as variáveis para a próxima jogada
+function resetBoard() {
+  [firstCard, secondCard, lockBoard] = [null, null, false];
 }
